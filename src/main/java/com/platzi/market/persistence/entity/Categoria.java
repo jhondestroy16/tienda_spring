@@ -48,4 +48,6 @@ public class Categoria {
     public void setProductos(List<Producto> productos) {
         this.productos = productos;
     }
+
+
 }

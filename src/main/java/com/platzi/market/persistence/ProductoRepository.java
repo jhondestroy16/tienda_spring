@@ -13,13 +13,10 @@ import java.util.Optional;
 
 @Repository
 public class ProductoRepository implements ProductRepository {
-    private final ProductoCrudRepository productoCrudRepository;
-    private final ProductMapper productMapper;
-
-    public ProductoRepository(ProductoCrudRepository productoCrudRepository, ProductMapper productMapper) {
-        this.productoCrudRepository = productoCrudRepository;
-        this.productMapper = productMapper;
-    }
+    @Autowired
+    private ProductoCrudRepository productoCrudRepository;
+    @Autowired
+    private ProductMapper productMapper;
 
     @Override
     public List<Product> getAll() {

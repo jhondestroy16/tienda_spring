@@ -1,25 +1,24 @@
 package com.platzi.market.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name ="compras")
+@Table(name = "compras")
 public class Compra {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name ="id_compra")
+    @Column(name = "id_compra")
     private int idCompra;
 
-    @Column(name ="id_cliente")
+    @Column(name = "id_cliente")
     private String idCliente;
 
     private LocalDateTime fecha;
 
-    @Column(name="medio_pago")
+    @Column(name = "medio_pago")
     private String medioPago;
 
     private String comentario;
@@ -27,12 +26,14 @@ public class Compra {
     private String estado;
 
     @ManyToOne
-    @JoinColumn(name="id_cliente", insertable=false, updatable=false)
+    @JoinColumn(name = "id_cliente", insertable = false, updatable = false)
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "producto")
+    // Cambiado "mappedBy = "producto"" a "mappedBy = "compra""
+    @OneToMany(mappedBy = "compra")
     private List<ComprasProducto> productos;
 
+    // Getters y setters
     public int getIdCompra() {
         return idCompra;
     }
@@ -79,5 +80,13 @@ public class Compra {
 
     public void setComentario(String comentario) {
         this.comentario = comentario;
+    }
+
+    public List<ComprasProducto> getProductos() {
+        return productos;
+    }
+
+    public void setProductos(List<ComprasProducto> productos) {
+        this.productos = productos;
     }
 }
