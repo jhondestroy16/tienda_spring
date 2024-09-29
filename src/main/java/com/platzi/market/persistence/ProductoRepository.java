@@ -6,6 +6,8 @@ import com.platzi.market.persistence.crud.ProductoCrudRepository;
 import com.platzi.market.persistence.entity.Producto;
 import com.platzi.market.persistence.mapper.ProductMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,6 +27,12 @@ public class ProductoRepository implements ProductRepository {
     }
 
     @Override
+    public Page<Product> getAll1(Pageable pageable) {
+        Page<Producto> productoPage = (Page<Producto>) productoCrudRepository.findAll(pageable);
+        return productMapper.toProductPage(productoPage);
+    }
+
+    @Override
     public Optional<List<Product>> getByCategory(int categoryId) {
         List<Producto> productos = productoCrudRepository.findByIdCategoriaOrderByNombreAsc(categoryId);
         return Optional.of(productMapper.toProducts(productos));
@@ -40,7 +48,6 @@ public class ProductoRepository implements ProductRepository {
     public Optional<Product> getProduct(int productId) {
         return productoCrudRepository.findById(productId).map(producto -> productMapper.toProduct(producto));
     }
-
 
     @Override
     public Product save(Product product) {

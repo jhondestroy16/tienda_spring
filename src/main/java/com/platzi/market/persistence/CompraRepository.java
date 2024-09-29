@@ -36,4 +36,9 @@ public class CompraRepository implements PurchaseRepository {
 
         return mapper.toPurchase(compraCrudRepository.save(compra));
     }
+
+    public boolean delete(int productId) {
+        compraCrudRepository.deleteById(productId);
+        return false;
+    }
 }

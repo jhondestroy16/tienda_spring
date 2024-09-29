@@ -24,4 +24,8 @@ public class PurchaseService {
     public Purchase save(Purchase purchase) {
         return purchaseRepository.save(purchase);
     }
+
+    public boolean deleteProduct(int productId) {
+        return purchaseRepository.delete(productId);
+    }
 }

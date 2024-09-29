@@ -6,8 +6,11 @@ import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {CategoryMapper.class})
 public interface ProductMapper {
@@ -21,8 +24,23 @@ public interface ProductMapper {
             @Mapping(source = "categoria", target = "category"),
     })
     Product toProduct(Producto producto);
+
     List<Product> toProducts(List<Producto> productos);
+
     @InheritInverseConfiguration
     @Mapping(target = "codigoBarras", ignore = true)
     Producto toProduct(Product product);
+
+    // Nuevos métodos para manejar Page
+    default Page<Product> toProductPage(Page<Producto> productoPage) {
+        List<Product> products = toProducts(productoPage.getContent());
+        return new PageImpl<>(products, productoPage.getPageable(), productoPage.getTotalElements());
+    }
+
+    default Page<Producto> toProductoPage(Page<Product> productPage) {
+        List<Producto> productos = productPage.getContent().stream()
+                .map(this::toProduct)
+                .collect(Collectors.toList());
+        return new PageImpl<>(productos, productPage.getPageable(), productPage.getTotalElements());
+    }
 }
