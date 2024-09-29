@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import org.springframework.data.domain.Page;
 
 @RestController
@@ -56,44 +58,75 @@ public class ProductController {
         }
     }
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable("id") int productId,
+            @RequestBody Product productDetails) {
+        Product updatedProduct = productService.updateProduct(productId, productDetails);
+        return ResponseEntity.ok(updatedProduct);
+    }
+
     @PostMapping("/save/masivo")
-    public void saveProductsFromFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> saveProductsFromFile(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("El archivo está vacío.");
+        }
+
+        if (!Objects.equals(file.getContentType(), "text/plain")) {
+            return ResponseEntity.badRequest().body("Formato de archivo no soportado. Solo se permiten archivos de texto.");
+        }
+
         List<Product> products = new ArrayList<>();
+        List<String> errorLines = new ArrayList<>(); // Para almacenar las líneas con errores
+        boolean headerSkipped = false;
 
         try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
             String line;
+
             while ((line = br.readLine()) != null) {
-                if (line.startsWith("nombre")) {
-                    continue; // Ignorar la cabecera
+                if (!headerSkipped) {
+                    headerSkipped = true; // Saltar el encabezado
+                    continue;
                 }
 
                 String[] data = line.split(";");
 
-                // Validar que la línea tenga los 4 campos esperados
                 if (data.length < 4) {
-                    // Manejar error o continuar si no tiene suficientes datos
-                    System.err.println("Línea con formato inválido: " + line);
-                    continue; // O puedes lanzar una excepción si prefieres
+                    errorLines.add("Línea con formato inválido: " + line);
+                    continue;
                 }
 
-                // Asignar valores al objeto Product
-                Product product = new Product();
-                product.setNombre(data[0]);
-                product.setCategoryId(Integer.parseInt(data[1]));
-                product.setPrice(Integer.parseInt(data[2]));
-                product.setStock(Integer.parseInt(data[3]));
-                product.setActive(true);
+                try {
+                    Product product = new Product();
+                    product.setNombre(data[0]);
+                    product.setCategoryId(Integer.parseInt(data[1]));
+                    product.setPrice(Double.parseDouble(data[2]));
+                    product.setStock(Integer.parseInt(data[3]));
+                    product.setActive(true);
 
-                products.add(product);
+                    products.add(product);
+                } catch (NumberFormatException e) {
+                    errorLines.add("Error en la conversión de datos en la línea: " + line);
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al procesar el archivo.");
         }
 
-        // Guardar todos los productos en la base de datos
-        for (Product product : products) {
-            productService.save(product); // Llama a tu servicio para guardar cada producto
+        // Guardar todos los productos en una sola transacción
+        try {
+            productService.saveAll(products); // Usar saveAll para optimizar el guardado
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al guardar productos: " + e.getMessage());
         }
+
+        if (!errorLines.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT).body("Productos guardados parcialmente. Errores en las siguientes líneas:\n" + String.join("\n", errorLines));
+        }
+
+        return ResponseEntity.ok("Productos guardados exitosamente.");
     }
+
+
 
 }

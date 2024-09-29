@@ -17,6 +17,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/products/**").permitAll()
                 .requestMatchers("/products/save").permitAll()
+                .requestMatchers("/products/save/masivo").permitAll()
                 .requestMatchers("/category/**").permitAll()
                 .anyRequest().authenticated()
         );

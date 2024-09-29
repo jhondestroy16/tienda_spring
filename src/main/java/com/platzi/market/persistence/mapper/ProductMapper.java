@@ -1,6 +1,8 @@
 package com.platzi.market.persistence.mapper;
 
+import com.platzi.market.domain.Category;
 import com.platzi.market.domain.Product;
+import com.platzi.market.persistence.entity.Categoria;
 import com.platzi.market.persistence.entity.Producto;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
@@ -26,12 +28,14 @@ public interface ProductMapper {
     Product toProduct(Producto producto);
 
     List<Product> toProducts(List<Producto> productos);
+    //List<Producto> toProductos(List<Product> products);
 
     @InheritInverseConfiguration
     @Mapping(target = "codigoBarras", ignore = true)
     Producto toProduct(Product product);
 
-    // Nuevos métodos para manejar Page
+    List<Producto> toProductos(List<Product> products);  // Método corregido
+
     default Page<Product> toProductPage(Page<Producto> productoPage) {
         List<Product> products = toProducts(productoPage.getContent());
         return new PageImpl<>(products, productoPage.getPageable(), productoPage.getTotalElements());

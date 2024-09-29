@@ -13,6 +13,7 @@ public interface ProductRepository {
     Optional<List<Product>> getScareProducts(int quantity);
     Optional<Product> getProduct(int productId);
     Product save(Product product);
+    void saveAll(List<Product> products);
     void delete(int productId);
     Page<Product> getAll1(Pageable pageable);
 }

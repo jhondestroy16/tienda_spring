@@ -35,10 +35,27 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+
+    public void saveAll(List<Product> products) {
+        productRepository.saveAll(products);
+    }
+
     public boolean deleteProduct(int productId) {
         return getProduct(productId).map(product -> {
             productRepository.delete(productId);
             return true;
         }).orElse(false);
+    }
+
+    public Product updateProduct(int productId, Product productDetails) {
+        return productRepository.getProduct(productId)
+                .map(existingProduct -> {
+                    existingProduct.setNombre(productDetails.getNombre());
+                    existingProduct.setPrice(productDetails.getPrice());
+                    existingProduct.setCategory(productDetails.getCategory());
+
+                    return productRepository.save(existingProduct);
+                })
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + productId));
     }
 }
